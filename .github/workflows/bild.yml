@@ -1,0 +1,41 @@
+name: Bild erzeugen (FLUX.1 Krea)
+
+on:
+  push:
+    paths:
+      - "prompts/aktuell.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bild-generator
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Abhängigkeiten installieren
+        run: pip install gradio_client
+
+      - name: Bild erzeugen
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/generate.py
+
+      - name: Bild speichern
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add bilder/
+          git commit -m "Neues Bild: $(head -c 60 prompts/aktuell.txt)"
+          git push
