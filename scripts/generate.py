@@ -24,7 +24,11 @@ def main() -> int:
     height = int(os.environ.get("HEIGHT", "768"))
     token = os.environ.get("HF_TOKEN") or None
 
-    client = Client(SPACE, hf_token=token)
+    # Neuere gradio_client-Versionen nutzen "token", ältere "hf_token".
+    try:
+        client = Client(SPACE, token=token)
+    except TypeError:
+        client = Client(SPACE, hf_token=token)
     result = client.predict(
         prompt=prompt,
         width=width,
